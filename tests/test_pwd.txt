@@ -1,0 +1,5 @@
+# 
+# Search all files in current working directory with simple grep on 'crumpet'
+#
+./test_files
+/crumpet/

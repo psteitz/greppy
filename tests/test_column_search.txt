@@ -1,0 +1,7 @@
+# 
+# Simple search for lines with exact match on a field value. Returns all lines in test.csv that have '13455' in the ProductID field.
+# The input file is expected to be in the directory that the program is launched from.  You can use full path specifications to access
+# files not in the current working directory.
+#
+test_files/test.csv
+ProductId | 1128
