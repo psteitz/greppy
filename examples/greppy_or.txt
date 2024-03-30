@@ -1,0 +1,15 @@
+# 
+# Search test.csv for lines where ProductId is in the list 1123, 2234, 1111 OR ProductDescriotion contains the string "crumpets" (or both).
+#
+# Note that if either ProductID or ProductDescriotion is not a field name (on first line of test.csv), this will return no lines.
+#
+# There can be as many match criteria after the OR as you like.  So, for example, adding another line like
+# "ProductCategory | hoity toity"
+# would also include all lines from the "hoity toity" category.
+#
+# The slashes around "crumpets" mean anything with a ProductDescription that includes the string "crumpets" will match.
+#
+test.csv
+OR
+ProductId | [1123, 2234, 1111]
+ProductDescription | /crumpets/

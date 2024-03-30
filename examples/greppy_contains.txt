@@ -1,0 +1,6 @@
+#
+# Search test.csv for lines that contain the string "salty" anywhere in any field. Like simple grep.
+# So "1234 | salty peanut goo | blah" will match even though "salty" is not the full field value.
+#
+test.csv
+/salty/

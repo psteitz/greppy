@@ -1,0 +1,15 @@
+# 
+# Search all files in C:\users\billybob\downloads\ for lines where it is not the case that either ProductId
+# is in the list 1123, 2234, 1111 OR ProductDescriotion contains the string "crumpets" (or both).
+# The trailing \ in the file specification tells greppy he is pointing a directory and needs to search
+# all of the files in it.  The output includes the names of the files searched followed by the matched lines.
+#
+# Note that the same results will be returned by moving the NOT to the clauses and changing OR to AND:
+# AND
+# NOT | ProductId | [1123, 2234, 1111]
+# NOT | ProductDescription | /crumpets/
+#
+C:\users\billybob\downloads\
+OR
+ProductId | [1123, 2234, 1111]
+ProductDescription | /crumpets/

@@ -1,0 +1,6 @@
+#
+# Search test.csv for lines that have the string 'salty dog' as the value of any field.
+# So "1234 | salty dog | blah" will match, but "1234 | salty dog chicken | blah " will not.
+#
+test.csv
+salty dog
