@@ -108,14 +108,14 @@ def test_main_not_or(capsys):
 
 
 def test_parse_rules_not_and():
-    """Test parse_rules function on negated disjunction"""
+    """Test parse_rules function on AND search with negation."""
     fields = get_fields('./test_files/test.csv', 'file')
     assert parse_rules('./test_and.txt',
                        fields) == '$3 ~ /nut/ && $4 !~ /^[ ]*"?snacks"?[ ]*$/'
 
 
 def test_generate_awk_script_not_and():
-    """Test generate_awk_script function on negated disjunction"""
+    """Test generate_awk_script function on AND search with negation."""
     fields = get_fields('./test_files/test.csv', 'file')
     match = parse_rules('./test_and.txt', fields)
     script_lines = generate_awk_script(match, fields).split('\n')
@@ -137,3 +137,36 @@ def test_main_not_and(capsys):
     assert captured[2] == '1126 | 1.00 | plain peanut butter | grocery'
     assert captured[3] == '1128 || "peanut butter dog treats" | pets'
     assert captured[4] == '1129 | 3.00 | peanuts ||'
+
+
+def test_parse_rules_value_range():
+    """Test parse_rules function on value range"""
+    fields = get_fields('./test_files/test.csv', 'file')
+    assert parse_rules('./test_value_range.txt',
+                       fields) == '$2 >= 2 && $2 < 5'
+
+
+def test_generate_awk_script_value_range():
+    """Test generate_awk_script function on value range"""
+    fields = get_fields('./test_files/test.csv', 'file')
+    match = parse_rules('./test_value_range.txt', fields)
+    script_lines = generate_awk_script(match, fields).split('\n')
+    assert script_lines[
+        0] == 'BEGIN { FS="|"; print "ProductId|ProductPrice|ProductDescription|ProductCategory|" }'
+    assert script_lines[
+        1] == 'NR > 1 && $2 >= 2 && $2 < 5  { print $0 }'
+
+
+def test_main_value_range(capsys):
+    """Test main function for value range."""
+    sys.argv = ['./greppy.py', './test_value_range.txt']
+    # Product description contains 'nut' and product category is not 'snacks'
+    main()
+    captured = capsys.readouterr().out.split('\n')
+    print(captured)
+    assert captured[0] == 'Results for ./test_files/test.csv'
+    assert captured[1] == 'ProductId|ProductPrice|ProductDescription|ProductCategory|'
+    assert captured[2] == '1122 | 3.00 | plain crumpets | grocery'
+    assert captured[3] == '1124| 2.00 | Salty jerky treads | pets'
+    assert captured[4] == '1127 | 2.00 | peanut brittle | snacks'
+    assert captured[5] == '1129 | 3.00 | peanuts ||'

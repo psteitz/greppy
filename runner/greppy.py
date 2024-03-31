@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 from typing import Dict, Tuple
 import subprocess
 
@@ -15,6 +16,7 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         returns:
             A string that can be used in the awk script to match the records that meet the criteria.
     """
+    order_operators = ['<', '>']
     with open(config_file, 'r', encoding='utf-8') as f:
         lines = f.readlines()
         operator = ''
@@ -82,6 +84,8 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         comparator = '!~' if neg else '~'
         if val.startswith('/'):  # Contains search
             match += f"${fields[fld]} {comparator} {val}"
+        elif val[0] in order_operators:  # Order comparison, value includes the test
+            match += f"${fields[fld]} {val}"
         else:  # Use regex to ignore leading and trailing spaces and optional quotes
             match += f"${fields[fld]} {comparator} /^[ ]*\"?{val}\"?[ ]*$/"
         if i < len(components) - 1:
@@ -174,11 +178,14 @@ def main():
     # Parse the rules from the config file
     match = parse_rules(args.config_file, fields)
 
-    # Generate the awk script
-    # Generate a name for the script by replacing '/', '.' or ' ' with '_' in file_spec
-    script_name = file_spec.replace(
-        '/', '_').replace('.', '_').replace(' ', '_') + '.awk'
+    # Generate a base output file name by contatenating the file_spec and rules file names with underscores
+    # and removing special characters.
+    output_name = file_spec + '_' + args.config_file
+    output_name = output_name.replace('/', '_').replace(
+        '.', '_').replace(' ', '_').replace('csv', '').replace('txt', '').replace('__', '_')
+    script_name = output_name + '.awk'
 
+    # Generate and save the awk script
     awk_script = generate_awk_script(match, fields)
 
     with open(script_name, 'w', encoding='utf-8') as f:
@@ -192,12 +199,18 @@ def main():
         file_list = [file_spec]
 
     # Execute the awk script on each file, printing the file name, then the results.
-    for file in file_list:
+    # Also pipe the results to a file with the same name as the file_spec with a .csv extension.
+    for _, file in enumerate(file_list):
         print(f"Results for {file}")
-        proc = subprocess.run(['gawk', '-f', script_name, file],
-                              check=True, stdout=subprocess.PIPE)
-        proc_stdout = proc.stdout.decode('utf-8')
-        print(proc_stdout)
+        with open(output_name + '.csv', 'wb') as out:
+            with subprocess.Popen(
+                    ['gawk', '-f', script_name, file], stdout=subprocess.PIPE, text=True) as proc:
+                for line in iter(lambda: proc.stdout.readline(1), ""):
+                    sys.stdout.buffer.writelines([line.encode()])
+                    out.writelines([line.encode()])
+                sys.stdout.flush()
+                out.flush()
+                proc.wait()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,8 @@
+# 
+# Search all files in ./test_files for lines where ProductPrice is between 2.00 (inclusive) and 5.00 (exclusive)
+# 2 <= ProductPrice < 5
+#
+./test_files
+AND
+ProductPrice | >= 2
+ProductPrice | < 5

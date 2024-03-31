@@ -2,10 +2,9 @@
 # Search all files in ./test_files for lines where it is not the case that either ProductId
 # is in the list 1123, 1128, 1129 OR ProductDescriotion contains the string "crumpets" (or both).
 # So should return all records that don't contain "crumpets" in description and are not 1123, 1128, 1129.
-# The trailing \ in the file specification tells greppy he is pointing a directory and needs to search
-# all of the files in it.  The output includes the names of the files searched followed by the matched lines.
+# ./test_files is a directory, so the output includes the names of the files searched followed by the matched lines.
 #
-# Note that the same results will be returned by moving the NOT to the clauses and changing OR to AND:
+# Note that the same results would be returned if we moved NOT to the clauses and changed OR to AND:
 # AND
 # NOT | ProductId | [1121, 1128, 1129]
 # NOT | ProductDescription | /crumpets/
