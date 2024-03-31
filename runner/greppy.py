@@ -183,7 +183,7 @@ def main():
     # and removing special characters.
     output_name = file_spec + '_' + args.config_file
     output_name = output_name.replace('/', '_').replace(
-        '.', '_').replace(' ', '_').replace('csv', '').replace('txt', '').replace('__', '_')
+        '.', '_').replace(' ', '_').replace('csv', '').replace('txt', '').replace('__', '_').replace('\\', '_').replace('C:', '')
     script_name = output_name + '.awk'
 
     # Generate and save the awk script
