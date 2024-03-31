@@ -3,6 +3,9 @@
 # files generated when running tests
 tests/*.csv
 tests/*.awk
+runner/*.csv
+runner/*.awk
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
