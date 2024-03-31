@@ -2,6 +2,7 @@
 
 import argparse
 import os
+from pathlib import Path
 import sys
 from typing import Dict, Tuple
 import subprocess
@@ -178,10 +179,6 @@ def main():
     # Parse the rules from the config file
     match = parse_rules(args.config_file, fields)
 
-    # Get the current working directory (where the script is run from)
-    location = os.path.realpath(
-        os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
     # Generate a base output file name by contatenating the file_spec and rules file names with underscores
     # and removing special characters.
     output_name = file_spec + '_' + args.config_file
@@ -191,8 +188,9 @@ def main():
 
     # Generate and save the awk script
     awk_script = generate_awk_script(match, fields)
+    p = Path(__file__).with_name(script_name)
 
-    with open(os.path.join(location, script_name), 'w', encoding='utf-8') as f:
+    with p.open('w', encoding='utf-8') as f:
         f.write(awk_script)
 
     # Generate a list of files to process.  If the file_spec is a file, just process that file.
@@ -206,7 +204,8 @@ def main():
     # Also pipe the results to a file with the same name as the file_spec with a .csv extension.
     for _, file in enumerate(file_list):
         print(f"Results for {file}")
-        with open(os.path.join(location, output_name + '.csv'), 'wb') as out:
+        p = Path(__file__).with_name(output_name + '.csv')
+        with p.open('wb') as out:
             with subprocess.Popen(
                     ['gawk', '-f', script_name, file], stdout=subprocess.PIPE, text=True) as proc:
                 for line in iter(lambda: proc.stdout.readline(1), ""):
