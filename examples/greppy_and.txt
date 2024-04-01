@@ -1,7 +1,8 @@
 # 
 # Search test.csv for lines where ProductDesription contains "nut" but ProductCategory is not 'snacks'.
 #
-# There can be as many match criteria after the AND as you like.  So, for example, adding another line like
+# There can be as many match criteria after the AND as you like.  So, for example, adding another line
+# at the end like
 # "ProductCategory | hoity toity"
 # will restrict the output to lines with "hoity toity" in the ProductCategory column.
 #

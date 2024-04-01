@@ -10,6 +10,7 @@
 # NOT | ProductDescription | /crumpets/
 #
 C:\users\billybob\downloads\
+NOT
 OR
 ProductId | [1123, 2234, 1111]
 ProductDescription | /crumpets/
