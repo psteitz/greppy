@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-apache2-green)](https://github.com/psteitz/greppy/blob/main/LICENSE)
 
 ## What is this?
-Greppy is a little command line utility that dreams of one day becoming a real application.
+Greppy is a little command line utility for filtering csv files that dreams of one day becoming a real application.
 ## Main Features
 Greppy does only one thing, which is to filter input csv files for records that match search criteria.
 Under the covers, greppy generates and uses awk scripts to do the filtering.  It saves the scripts that it generates,
@@ -26,7 +26,7 @@ to the location where greppy.py is installed.  It is in general best to use full
 to a file, like ```/home/billybob/coolio.csv```.  It has to be a file spec that the OS that greppy is running on can understand and greppy has to have access to the directory or file.
 * The second line of a greppy program _may_ be 'NOT', in which case everything that follows is negated.
 * The following lines can include exactly one 'AND' or 'OR' line and that must be the first line after 'NOT' if there is a 'NOT'; otherwise the second line of the program.
-* All other lines express match conditions. What they mean depends on how many pipe-delimited fields they have. The most that they can have is 3, in which case the first one _must_ be 'NOT'.  Following the optional 'NOT', the next field is the name of a column in the csv. Call this the match field. This name _must_ exactly match one of the column headers in the input file. (At this point, greppy can't handle csv's without header lines.).  The last field is the target value or a comparison. If the value in the last field is surrounded by /'s, that means the match should succeed if the value is contained in the value that the csv has in the match field.  If the last field has a comparison operator - '>' or '<' in it, the value is compared to what the csv has in the match field. If the last field is a list of values in brakets, separated by commas, the match succeds if the match field exaclty matches one of the values. The 'NOT' in the first field, if there is one, does the natural thing.  Putting this all together, for example ```NOT | ProductId | /12/``` means ProductId can't contain '12' in it.  So records with ProductId equal to '212', '12', '1233' will not match, but '231' will.  As another example, ```SalesPrice | >= 10``` matches all records where the value of the SalesPrice field is at least 10. When target values don't have comparison operators and aren't surrounded by /'s, they mean exact match, but the comparison ignores leading and trailing spaces and quotes.  So for example, ```ProductName | salt peanuts``` will match csv lines with '   salt peanuts  ', '  "salt peanuts"' or even '"salt peanuts' in the ProductName column. but not 'salt peanuts 2'.  If there is only one field in a greppy program line, greppy looks for the match in any field.
+* All other lines express match conditions. If there is an OR or AND in front of them, they are combined in the natural way and there can be any number of them. What they mean depends on how many pipe-delimited fields they have. The most that they can have is 3, in which case the first one _must_ be 'NOT'.  Following the optional 'NOT', the next field is the name of a column in the csv. Call this the match field. This name _must_ exactly match one of the column headers in the input file. (At this point, greppy can't handle csv's without header lines.).  The last field is the target value or a comparison. If the value in the last field is surrounded by /'s, that means the match should succeed if the value is contained in the value that the csv has in the match field.  If the last field has a comparison operator - '>' or '<' in it, the value is compared to what the csv has in the match field. If the last field is a list of values in brakets, separated by commas, the match succeds if the match field exaclty matches one of the values. The 'NOT' in the first field, if there is one, does the natural thing.  Putting this all together, for example ```NOT | ProductId | /12/``` means ProductId can't contain '12' in it.  So records with ProductId equal to '212', '12', '1233' will not match, but '231' will.  As another example, ```SalesPrice | >= 10``` matches all records where the value of the SalesPrice field is at least 10. When target values don't have comparison operators and aren't surrounded by /'s, they mean exact match, but the comparison ignores leading and trailing spaces and quotes.  So for example, ```ProductName | salt peanuts``` will match csv lines with '   salt peanuts  ', '  "salt peanuts"' or even '"salt peanuts' in the ProductName column. but not 'salt peanuts 2'.  If there is only one field in a greppy program line, greppy looks for the match in any field.
 
 Here is a detailed explanation for the example program called ```greppy_multi_file.txt``` in the examples folder:
 <pre>
@@ -52,9 +52,6 @@ ProductId | ProductDescription
 1124 | fish tacos
 9999 | apples
 </pre>
-
-
-
 
 ### Running greppy
 Type ```python3 greppy.py prog.txt``` where ```prog.txt``` is a greppy program file.  If the program file is not in the same directory that you launch greppy from, you need to provide the full path to that file.  Greppy streams its output to the console and also creates an output ```.csv``` file in the directory where ```greppy.py``` is
