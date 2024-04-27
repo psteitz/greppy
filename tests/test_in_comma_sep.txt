@@ -1,0 +1,8 @@
+# 
+# Search test-comma-sep.csv for lines where ProductCategory is not grocery or pets.
+# The !SEPARATOR directive changes the expected column separator from the default, '|' to ','
+#
+test_files/test-comma-sep.csv
+!SEPARATOR ,
+NOT
+ProductCategory | [grocery, pets]

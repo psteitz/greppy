@@ -1,0 +1,10 @@
+# 
+# Search test-no-header.csv for lines where ProductDesription contains "nut" but ProductCategory is not 'snacks'.
+# This example assumes that the input file does not have a header line and that it is comma-separated.
+#
+test-no-header.csv
+!SEPARATOR ,
+!FIELDS [ProductId, ProductPrice, ProductDescription, ProductCategory]
+AND
+ProductDescription | /nut/
+NOT | ProductCategory | snacks

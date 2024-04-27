@@ -1,0 +1,7 @@
+# 
+# Search test-no-header.csv for lines where ProductDesription contains "nut" but ProductCategory is not 'snacks'.
+# Assume that the file does not contain a header line and use the fields in the !FIELDS line.
+#
+test_files/no-header/test-no-header.csv
+!FIELDS [ProductId, ProductPrice, ProductDescription, ProductCategory]
+ProductPrice | [5.00, 7.50]

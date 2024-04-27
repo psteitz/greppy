@@ -1,0 +1,9 @@
+# 
+# Search test.csv for lines where ProductDesription contains "nut" but ProductCategory is not 'snacks'.
+# Assumes that the input file has no header, but the fields are as below.
+#
+test.csv
+!FIELDS [ProductId, ProductPrice, ProductDescription, ProductCategory]
+AND
+ProductDescription | /nut/
+NOT | ProductCategory | snacks
