@@ -25,9 +25,9 @@ It's probably best to just imitate the examples and experiment with small files 
 to the location where greppy.py is installed.  It is in general best to use full paths.  It can be a network share, like ```\\san-01\foo\incoming``` or the full path
 to a file, like ```/home/billybob/coolio.csv```.  It has to be a file spec that the OS that greppy is running on can understand and greppy has to have access to the directory or file.
 * After the file spec, either or both of two optional lines like the following can appear
-  * !HEADER [field1, field2. ..., fieldn]
+  * !FIELDS [field1, field2. ..., fieldn]
   * !SEPARATOR ,
-  * !HEADER lines tell greppy what the names of the fields are. If there is no !HEADER directive, Greppy assumes that the first line in the file is a header line containing field names (standard setup for csv files). The !HEADER lists don't have to include all of the fields, but they must be in the right order  and include all fields between the first and last on the list.
+  * !!FIELDS lines tell greppy what the names of the fields are. If there is no !!FIELDS directive, Greppy assumes that the first line in the file is a header line containing field names (standard setup for csv files). The !!FIELDS lists don't have to include all of the fields, but they must be in the right order  and include all fields between the first and last on the list.
   * !SEPARATOR lines over-ride the default "|" column separator.  So if the file uses commas as separators, use the line above.
 * Following the file spec and directive lines above, there _may_ be a line with just the word, 'NOT', in which case everything that follows is negated.  In other words, we are asking greppy to return all lines that do NOT satisfy the conditions to follow.
 * The following lines can include exactly one 'AND' or 'OR' line and that must be the first line after 'NOT' if there is a 'NOT,'
