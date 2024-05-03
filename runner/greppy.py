@@ -134,8 +134,7 @@ def get_file_spec(config_file: str) -> Tuple[str, str]:
             first_line = f.readline().strip()
             if len(first_line) == 0 or first_line.startswith('#'):
                 continue
-            else:
-                break
+            break
         if os.path.isdir(first_line):
             return 'dir', first_line
         return 'file', first_line
@@ -246,20 +245,45 @@ def main():
 
     # Execute the awk script on each file, printing the file name, then the results.
     # Also pipe the results to a file with the same name as the file_spec with a .csv extension.
-    for _, file in enumerate(file_list):
+    # If there are multiple files, add the file name as a new field to the end of each line.
+    # Do not repeat the header line for each file - just create one with the new field name.
+    num_files = len(file_list)
+    ct = 0
+    for i, file in enumerate(file_list):
         print(f"Results for {file}")
-        sys.stdout.flush()
+        file_name = str(file)
         p = Path(__file__).with_name(output_name + '.csv')
-        with p.open('wb') as out:
+        with p.open('ab') as out:
             with subprocess.Popen(
                     ['gawk', '-f', script_name, file], stdout=subprocess.PIPE, text=True) as proc:
-                for line in iter(lambda: proc.stdout.readline(1), ""):
-                    sys.stdout.buffer.writelines([line.encode()])
-                    out.writelines([line.encode()])
+                line_number = 0
+                for line in iter(lambda: proc.stdout.readline(), ""):
+                    if ct == 1 and line_number == 0:
+                        # Skip header line for files after the first one in multi-file
+                        line_number += 1
+                        continue
+                    if num_files > 1 and i == 0 and ct == 0:
+                        # get the first line of the awk output and add file name
+                        header = line.encode().strip() + " ".encode() + \
+                            field_separator.encode() + " file name\n".encode()
+                        out.writelines([header])
+                        sys.stdout.buffer.writelines([header])
+                        ct += 1
+                        line_number += 1
+                        continue
+                    if num_files > 1:
+                        # Add the file name to the end of each line
+                        line = line.encode().strip() + field_separator.encode() + \
+                            " ".encode() + file_name.encode() + "\n".encode()
+                    else:
+                        line = line.encode().strip() + "\n".encode()
+                    sys.stdout.buffer.writelines([line])
+                    out.writelines([line])
+                    line_number += 1
+                proc.wait()
                 sys.stdout.flush()
                 sys.stderr.flush()
                 out.flush()
-                proc.wait()
 
 
 if __name__ == '__main__':

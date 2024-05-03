@@ -42,10 +42,10 @@ def test_main_simple_grep(capsys):
     main()
     captured = capsys.readouterr().out.split('\n')
     assert captured[0] == 'Results for ./test_files/test.csv'
-    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory'
-    assert captured[2] == '1121 | 7.50 | fancy crumpets | grocery'
-    assert captured[3] == '1122 | 3.00 | plain crumpets | grocery'
-    assert captured[4] == '1125 | 1.00 | sugar crumpets | "snacks"'
+    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory | file name'
+    assert captured[2] == '1121 | 7.50 | fancy crumpets | grocery| ./test_files/test.csv'
+    assert captured[3] == '1122 | 3.00 | plain crumpets | grocery| ./test_files/test.csv'
+    assert captured[4] == '1125 | 1.00 | sugar crumpets | "snacks"| ./test_files/test.csv'
 
 
 def test_rules_column_search():
@@ -99,12 +99,12 @@ def test_main_not_or(capsys):
     main()
     captured = capsys.readouterr().out.split('\n')
     assert captured[0] == 'Results for ./test_files/test.csv'
-    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory'
-    assert captured[2] == '1124| 2.00 | Salty jerky treads | pets'
-    assert captured[3] == '1126 | 1.00 | plain peanut butter | grocery'
-    assert captured[4] == '1127 | 2.00 | peanut brittle | snacks'
-    assert captured[5] == '| | 1.00 | mystery cheeze | grocery'
-    assert captured[6] == '11293 | 1.00 | mystery cheeze | grocery'
+    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory | file name'
+    assert captured[2] == '1124| 2.00 | Salty jerky treads | pets| ./test_files/test.csv'
+    assert captured[3] == '1126 | 1.00 | plain peanut butter | grocery| ./test_files/test.csv'
+    assert captured[4] == '1127 | 2.00 | peanut brittle | snacks| ./test_files/test.csv'
+    assert captured[5] == '| | 1.00 | mystery cheeze | grocery| ./test_files/test.csv'
+    assert captured[6] == '11293 | 1.00 | mystery cheeze | grocery| ./test_files/test.csv'
 
 
 def test_parse_rules_not_and():
@@ -164,11 +164,11 @@ def test_main_value_range(capsys):
     captured = capsys.readouterr().out.split('\n')
     print(captured)
     assert captured[0] == 'Results for ./test_files/test.csv'
-    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory'
-    assert captured[2] == '1122 | 3.00 | plain crumpets | grocery'
-    assert captured[3] == '1124| 2.00 | Salty jerky treads | pets'
-    assert captured[4] == '1127 | 2.00 | peanut brittle | snacks'
-    assert captured[5] == '1129 | 3.00 | peanuts ||'
+    assert captured[1] == 'ProductId | ProductPrice | ProductDescription | ProductCategory | file name'
+    assert captured[2] == '1122 | 3.00 | plain crumpets | grocery| ./test_files/test.csv'
+    assert captured[3] == '1124| 2.00 | Salty jerky treads | pets| ./test_files/test.csv'
+    assert captured[4] == '1127 | 2.00 | peanut brittle | snacks| ./test_files/test.csv'
+    assert captured[5] == '1129 | 3.00 | peanuts ||| ./test_files/test.csv'
 
 
 def test_main_no_header(capsys):
