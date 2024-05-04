@@ -14,6 +14,7 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         args:
             config_file: The name of the config file that contains the match rules.
             fields: A dictionary of field names and their index in the csv file.
+                    fields[""] = 0 for full record match.
         returns:
             A string that can be used in the awk script to match the records that meet the criteria.
     """
@@ -21,6 +22,12 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
     with open(config_file, 'r', encoding='utf-8') as f:
         lines = f.readlines()
         operator = ''
+        # Initialize the components list, a list of (negate, field, value) tuples
+        # representing match clauses.
+        #   negate: boolean - whether or not the clause is negated
+        #   field:  string - can be a field name, empty string (full record match),
+        #           or $n for column number
+        #   value:  string - value to match
         components = []
         negate = False
         for line in lines:
@@ -84,12 +91,18 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         # To ignore leading and trailing spaces and allowing optional quotes,
         # need to target a regex that looks like this: ^[ ]*["]?{val}["]?[ ]*$
         comparator = '!~' if neg else '~'
+        # If fld starts with a $, it is a column number, so use it as is;
+        # otherwise get the column number from the fields dictionary
+        if fld.startswith('$'):
+            match_field = fld
+        else:
+            match_field = fields[fld]
         if val.startswith('/'):  # Contains search
-            match += f"${fields[fld]} {comparator} {val}"
+            match += f"${match_field} {comparator} {val}"
         elif val[0] in order_operators:  # Order comparison, value includes the test
-            match += f"${fields[fld]} {val}"
+            match += f"${match_field} {val}"
         else:  # Use regex to ignore leading and trailing spaces and optional quotes
-            match += f"${fields[fld]} {comparator} /^[ ]*\"?{val}\"?[ ]*$/"
+            match += f"${match_field} {comparator} /^[ ]*\"?{val}\"?[ ]*$/"
         if i < len(components) - 1:
             match += f" {operator} "
     if negate:
@@ -257,7 +270,7 @@ def main():
             with subprocess.Popen(
                     ['gawk', '-f', script_name, file], stdout=subprocess.PIPE, text=True) as proc:
                 line_number = 0
-                for line in iter(lambda: proc.stdout.readline(), ""):
+                for line in proc.stdout:
                     if ct == 1 and line_number == 0:
                         # Skip header line for files after the first one in multi-file
                         line_number += 1
