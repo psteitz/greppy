@@ -110,7 +110,9 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
     return match
 
 
-def generate_awk_script(match: str, fields: Dict[str, int], field_separator="|", has_header=True) -> str:
+def generate_awk_script(
+    match: str, fields: Dict[str, int], field_separator="|", has_header=True
+) -> str:
     """
     Generate the awk script, using the match string.
         args:
@@ -127,12 +129,12 @@ def generate_awk_script(match: str, fields: Dict[str, int], field_separator="|",
         # Strip off the last field_separator
         header = header[:-1]
         awk_script = f'BEGIN {{ FS="{field_separator}"; print "{header}" }}\n'
-        awk_script += f'{match}  {{ print $0 }}\n'
+        awk_script += f"{match}  {{ print $0 }}\n"
     else:
         # If input file has headers, print the first line and then match the rest of the lines.
         awk_script = f'BEGIN {{ FS="{field_separator}"}}\n'
-        awk_script += 'NR == 1 { print $0 }\n'
-        awk_script += f'NR > 1 && {match}  {{ print $0 }}\n'
+        awk_script += "NR == 1 { print $0 }\n"
+        awk_script += f"NR > 1 && {match}  {{ print $0 }}\n"
     return awk_script
 
 
