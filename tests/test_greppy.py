@@ -211,3 +211,15 @@ def test_main_no_header_first_record_returned(capsys):
     assert captured[1] == 'ProductId|ProductPrice|ProductDescription|ProductCategory'
     assert captured[2] == '1121 | 7.50 | fancy crumpets | grocery'
     assert captured[3] == '1123 | 5.00 | salty dog pretzels | snacks'
+
+
+def test_main_no_header_directive(capsys):
+    """Test !NOHEADER directive."""
+    sys.argv = ['./greppy.py', './test_in_prices_no_header_directive.txt']
+    # Product description contains 'nut' and product category is not 'snacks'
+    main()
+    captured = capsys.readouterr().out.split('\n')
+    print(captured)
+    assert captured[0] == 'Results for test_files/no-header/test-no-header.csv'
+    assert captured[1] == '1121 | 7.50 | fancy crumpets | grocery'
+    assert captured[2] == '1123 | 5.00 | salty dog pretzels | snacks'

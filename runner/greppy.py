@@ -120,7 +120,7 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         # If fld starts with a $, it is a column number, so use it as is;
         # otherwise get the column number from the fields dictionary
         if fld.startswith('$'):
-            match_field = fld
+            match_field = fld[1:]  # Remove the $ sign
         else:
             match_field = fields[fld]
         if val.startswith('/'):  # Contains search
