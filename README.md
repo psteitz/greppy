@@ -88,7 +88,7 @@ ProductId | [1123, 2234, 1111]
 ProductDescription | /crumpets/
 </pre>
 The first line points greppy at all of the csv's files in billybob's downloads folder.  This obviously will only work on Windows likely for only billybob himself.
-The NOT at the beginning says all that follows is to be negated.  The OR means any one of the following matches needs to succeed. The ProductId match looks for matches on ProductId against any of 1123, 2234, 1111 and the ProductDescription match looks for 'crumpets' contained in that field.  So what we are looking for all together is records that do not have product ids 1123, 2234, 1111 and do not have 'crumpets' somewhere in their description.  So assuming that ProductId if we have a csv like
+The NOT at the beginning says all that follows is to be negated.  The OR means any one of the following matches needs to succeed. The ProductId match looks for matches on ProductId against any of 1123, 2234, 1111 and the ProductDescription match looks for 'crumpets' contained in that field.  So what we are looking for all together is records that do not have product ids 1123, 2234, 1111 and do not have 'crumpets' somewhere in their description.  So assuming we have a csv like
 <pre>
 ProductId | ProductDescription
 1123 | tea and crumpets
@@ -107,10 +107,35 @@ ProductId | ProductDescription
 ### awk match condtions
 Greppy progam lines that start with 'awk' are assumed to be awk match conditions. These work like the match_clauses above.  They are combined using the AND and OR that may be defined above them and any other awk or match_clauses that preceede them. Any awk match expression can be used. Column names, if they appear, are replaced by field indexes.
 
+For example.
+
+Start with the input csv:
+<pre>
+ProductId | price | quantity | gross profit
+1123 | 10 | 5 | 25
+1124 | 9 | 2 | 20
+2234 | 15 | 3 | 30
+1174 | 12 | 10 | 99
+</pre>
+
+Run
+<pre>
+C:\users\billybob\downloads\
+AND
+NOT | ProductId | [1123, 2234, 1111]
+awk | gross profit < price * quantity
+</pre>
+
+Returns one line:
+
+1174 | 12 | 10 | 99
+
+The first and third line fail the first clause and the second line fails the awk clause.
+
 
 ### Running greppy
 Type ```python3 greppy.py prog.txt``` where ```prog.txt``` is a greppy program file.  If the program file is not in the same directory that you launch greppy from, you need to provide the full path to that file.  Greppy streams its output to the console and also creates an output ```.csv``` file in the directory where ```greppy.py``` is
 located.  It also creates a ```.awk``` file in that directory.  The names of these files are a kind of ugly combination of the name of the program file and the input csv. 
 If the first line of the program file specifies a directory, greppy filters all of the .csv files in that directory. Results are written to the console sequentially and
-combined into a single output csv.  Greppy assumes that input csv are pipe-delimited, i.e., the column separator is ```|```.  One day that will be configurable.
+combined into a single output csv. 
 ### Troubleshooting 
