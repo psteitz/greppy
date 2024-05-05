@@ -4,36 +4,26 @@ import argparse
 import os
 from pathlib import Path
 import sys
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 import subprocess
 
 
-def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
+def get_operators(file_name: str) -> Tuple[str, bool]:
     """
-        Parse the rules from the config file and return a match string to be used in the awk script.
-        args:
-            config_file: The name of the config file that contains the match rules.
-            fields: A dictionary of field names and their index in the csv file.
-                    fields[""] = 0 for full record match.
-        returns:
-            A string that can be used in the awk script to match the records that meet the criteria.
+    Scan the program file for single lines with 'NOT' and 'OR' or 'AND' operators.
+    args:
+        file_name: The name of the program file.
+    returns:
+        A tuple containing an operator ('OR' or 'AND') and a boolean indicating if 'NOT' is present.
     """
-    order_operators = ['<', '>']
-    with open(config_file, 'r', encoding='utf-8') as f:
+    with open(file_name, 'r', encoding='utf-8') as f:
         lines = f.readlines()
         operator = ''
-        # Initialize the components list, a list of (negate, field, value) tuples
-        # representing match clauses.
-        #   negate: boolean - whether or not the clause is negated
-        #   field:  string - can be a field name, empty string (full record match),
-        #           or $n for column number
-        #   value:  string - value to match
-        components = []
         negate = False
         for line in lines:
             line = line.strip()
-            if len(line) == 0 or line.startswith('#') or line.startswith('!'):
-                continue  # Skip comment lines, blank lines and directives
+            if len(line) == 0 or line.startswith('#'):
+                continue  # Skip comment lines and blank lines
             if line in ['OR', 'AND']:
                 if line == 'OR':
                     operator = '||'
@@ -42,6 +32,27 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
                 continue
             if line == 'NOT':
                 negate = True
+    return operator, negate
+
+
+def get_components(file_name: str) -> List[Tuple[bool, str, str]]:
+    """
+    Parse the match lines from the config file and return a list of (negate, field, value) tuples.
+    """
+    with open(file_name, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        # Initialize the components list, a list of (negate, field, value) tuples
+        # representing match clauses.
+        #   negate: boolean - whether or not the clause is negated
+        #   field:  string - can be a field name, empty string (full record match),
+        #           or $n for column number
+        #   value:  string - value to match
+        components = []
+        for line in lines:
+            line = line.strip()
+            if len(line) == 0 or line.startswith('#') or line.startswith('!'):
+                continue  # Skip comment lines, blank lines and directives
+            if line in ['OR', 'AND', 'NOT']:
                 continue
             # this is a match line, split on | and check for NOT
             parts = line.split('|')
@@ -75,7 +86,22 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
             # Add the clause to the components list
             components.append(
                 (clause_negate, field, value))
+    return components
 
+
+def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
+    """
+        Parse the rules from the config file and return a match string to be used in the awk script.
+        args:
+            config_file: The name of the config file that contains the match rules.
+            fields: A dictionary of field names and their index in the csv file.
+                    fields[""] = 0 for full record match.
+        returns:
+            A string that can be used in the awk script to match the records that meet the criteria.
+    """
+    order_operators = ['<', '>']
+    operator, negate = get_operators(config_file)
+    components = get_components(config_file)
     # Build the match string
     # First check to make sure that if there is more than one component, the operator is || or &&
     if len(components) > 2 and operator not in ['||', '&&']:
@@ -111,7 +137,7 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
 
 
 def generate_awk_script(
-    match: str, fields: Dict[str, int], field_separator="|", has_header=True
+    match: str, fields: Dict[str, int], field_separator="|", has_fields=True
 ) -> str:
     """
     Generate the awk script, using the match string.
@@ -119,16 +145,20 @@ def generate_awk_script(
             match: The match string generated from the rules in the config file.
             fields: A dictionary of field names and their index in the csv file.
             field_separator: The separator used in the csv file. Default is '|'.
+            has_fields: A boolean indicating if the input files have headers. Default is True.
         returns:
             A string that is the awk script that can be used to search the csv files.
     """
     # If input file has no headers, generate a header line from the fields dictionary
-    # Also, match all lines in the file.
-    if not has_header:
-        header = field_separator.join(fields.keys())
-        # Strip off the last field_separator
-        header = header[:-1]
-        awk_script = f'BEGIN {{ FS="{field_separator}"; print "{header}" }}\n'
+    # if it is not empty.
+    if not has_fields:
+        if len(fields) == 0:  # noheader must be true, do not generate header line
+            awk_script = f'BEGIN {{ FS="{field_separator}"}}\n'
+        else:
+            header = field_separator.join(fields.keys())
+            # Strip off the last field_separator
+            header = header[:-1]
+            awk_script = f'BEGIN {{ FS="{field_separator}"; print "{header}" }}\n'
         awk_script += f"{match}  {{ print $0 }}\n"
     else:
         # If input file has headers, print the first line and then match the rest of the lines.
@@ -185,17 +215,20 @@ def get_fields(path: str, path_type: str, field_separator: str) -> dict:
     return ret
 
 
-def process_directives(config_file: str) -> Tuple[str, dict]:
+def process_directives(config_file: str) -> Tuple[str, dict, bool]:
     """Process directives in the config file.
     args:
         config_file: The name of the config file that contains the match rules.
     returns:
-        A tuple containing the field separator and a list of column names.
+        A tuple containing the field separator, a dictionary of field names and their index in the csv file,
+        and a boolean indicating if the input files have headers.
         If !FIELDS directive is found, the column names are taken from the directive, otherwise an empty list is returned.
         If !SEPARATOR directive is found, the field separator is taken from the directive, otherwise '|' is returned.
+        If !NOHEADER directive is found, the boolean is set to True, otherwise False.
     """
     field_separator = '|'
     fields = {}
+    noheader = False
     with open(config_file, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
@@ -210,7 +243,9 @@ def process_directives(config_file: str) -> Tuple[str, dict]:
                 fields[""] = 0
             if line.startswith('!SEPARATOR'):
                 field_separator = line.split(' ')[1].strip()
-    return field_separator, fields
+            if line.startswith('!NOHEADER'):
+                noheader = True
+    return field_separator, fields, noheader
 
 
 def main():
@@ -226,11 +261,12 @@ def main():
     path_type, file_spec = get_file_spec(args.config_file)
 
     # Process directives - !HEADER and !SEPARATOR
-    field_separator, fields = process_directives(args.config_file)
+    field_separator, fields, noheader = process_directives(args.config_file)
 
     # Get the fields from the first line of the file_spec or the first csv file in the directory
-    # if column names are not provided in directive.
-    has_fields = len(fields) == 0  # has_fields means input files have headers
+    # if column names are not provided in directive and noheader is False.
+    # has_fields means input files have headers
+    has_fields = len(fields) == 0 and not noheader
     if has_fields:
         fields = get_fields(file_spec, path_type, field_separator)
 

@@ -27,7 +27,7 @@ The first (non-comment) line of a greppy program _must_ be a file specification 
 After the file spec, anywhere in the file, there can be _directive_ lines:
   * !FIELDS [field1, field2. ..., fieldn] - names of the fields.
   * !SEPARATOR ,
-  * !NO_HEADER - if present, assume the csv has no header. Ignore !FIELDS and allow only $ column references in match rules
+  * !NOHEADER - if present, assume the csv has no header. Ignore !FIELDS and allow only $ column references in match rules
 
 If there are no directives in the program, Greppy assumes that the first line in the input csv files is a header line containing field names (standard setup for csv files). The !FIELDS lists don't have to include all of the fields, but they must be in the right order and include all fields between the first and last on the list. 
 
