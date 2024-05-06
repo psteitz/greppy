@@ -223,3 +223,14 @@ def test_main_no_header_directive(capsys):
     assert captured[0] == 'Results for test_files/no-header/test-no-header.csv'
     assert captured[1] == '1121 | 7.50 | fancy crumpets | grocery'
     assert captured[2] == '1123 | 5.00 | salty dog pretzels | snacks'
+
+
+def test_awk_add_fields(capsys):
+    """Test awk example from README."""
+    sys.argv = ['./greppy.py', './test_awk_add_fields.txt']
+    main()
+    captured = capsys.readouterr().out.split('\n')
+    print(captured)
+    assert captured[0] == 'Results for test_files/awk/test-awk.csv'
+    assert captured[1] == 'ProductId | price | quantity | gross profit'
+    assert captured[2] == '1174 | 12 | 10 | 99'

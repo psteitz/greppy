@@ -38,6 +38,11 @@ def get_operators(file_name: str) -> Tuple[str, bool]:
 def get_components(file_name: str) -> List[Tuple[bool, str, str]]:
     """
     Parse the match lines from the config file and return a list of (negate, field, value) tuples.
+    If the line is of the form, 'awk | awk match contition', (False, 'awk', 'match condition') is returned.
+    args:
+        file_name: The name of the config file that contains the match rules.
+    returns:
+        A list of (negate, field, value) tuples representing match clauses.
     """
     with open(file_name, 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -89,6 +94,22 @@ def get_components(file_name: str) -> List[Tuple[bool, str, str]]:
     return components
 
 
+def replace_fields_with_numbers(fields: Dict[str, int], val: str) -> str:
+    """
+    Replace field names in the value with their corresponding column numbers.
+    args:
+        fields: A dictionary of field names and their index in the csv file.
+        val: The value to be matched.
+    returns:
+        The value with field names replaced by their column numbers.
+    """
+    for field, number in fields.items():
+        if field == "":
+            continue
+        val = val.replace(field, f"${number}")
+    return val
+
+
 def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
     """
         Parse the rules from the config file and return a match string to be used in the awk script.
@@ -114,6 +135,12 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
         if i == 0:
             continue
         (neg, fld, val) = component
+        # If the field is 'awk' pass the value with fields replaced by column numbers if needed
+        if fld == 'awk':
+            match += f"{replace_fields_with_numbers(fields, val)}"
+            if i < len(components) - 1:
+                match += f" {operator} "
+            continue
         # To ignore leading and trailing spaces and allowing optional quotes,
         # need to target a regex that looks like this: ^[ ]*["]?{val}["]?[ ]*$
         comparator = '!~' if neg else '~'

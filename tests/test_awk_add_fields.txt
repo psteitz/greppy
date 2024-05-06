@@ -1,0 +1,4 @@
+test_files/awk/test-awk.csv
+AND
+NOT | ProductId | [1123, 2234, 1111]
+awk | gross profit < price * quantity

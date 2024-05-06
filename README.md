@@ -107,9 +107,7 @@ ProductId | ProductDescription
 ### awk match condtions
 Greppy progam lines that start with 'awk' are assumed to be awk match conditions. These work like the match_clauses above.  They are combined using the AND and OR that may be defined above them and any other awk or match_clauses that preceede them. Any awk match expression can be used. Column names, if they appear, are replaced by field indexes.
 
-For example.
-
-Start with the input csv:
+For example, start with the input csv in test-awk.csv in the directory that greppy is run from:
 <pre>
 ProductId | price | quantity | gross profit
 1123 | 10 | 5 | 25
@@ -120,13 +118,13 @@ ProductId | price | quantity | gross profit
 
 Run
 <pre>
-C:\users\billybob\downloads\
+test-awk.csv
 AND
 NOT | ProductId | [1123, 2234, 1111]
 awk | gross profit < price * quantity
 </pre>
 
-Returns one line:
+Returns one record:
 
 1174 | 12 | 10 | 99
 
