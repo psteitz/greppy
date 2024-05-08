@@ -55,7 +55,7 @@ def get_components(file_name: str) -> List[Tuple[bool, str, str]]:
         components = []
         for line in lines:
             line = line.strip()
-            if len(line) == 0 or line.startswith('#') or line.startswith('!'):
+            if len(line) == 0 or line.startswith('#') or line.startswith('!FIELDS') or line.startswith('!SEPARATOR') or line.startswith('!NOHEADER'):
                 continue  # Skip comment lines, blank lines and directives
             if line in ['OR', 'AND', 'NOT']:
                 continue
@@ -136,7 +136,7 @@ def parse_rules(config_file: str, fields: Dict[str, int]) -> str:
             continue
         (neg, fld, val) = component
         # If the field is 'awk' pass the value with fields replaced by column numbers if needed
-        if fld == 'awk':
+        if fld == '!AWK':
             match += f"{replace_fields_with_numbers(fields, val)}"
             if i < len(components) - 1:
                 match += f" {operator} "
